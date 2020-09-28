@@ -10,8 +10,11 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import java.util.List;
 
 @Autonomous(name = "Ring Detector Auto", group="Autonomous")
-public class RingDetectorAuto extends AutoBase
+public class AutoRingDetection extends AutoBase
 {
+    private final boolean redAlliance = true;
+    private boolean doDetection = true;
+    
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Quad";
     private static final String LABEL_SECOND_ELEMENT = "Single";
@@ -43,17 +46,6 @@ public class RingDetectorAuto extends AutoBase
      */
     private TFObjectDetector tfod;
 
-    boolean doDetection = true;
-    
-    enum RingAmount {
-        Quad,
-        Single,
-        None,
-    }
-    
-    RingAmount ringAmount = RingAmount.None;
-    
-    
     @Override
     public void init()
     {
@@ -94,7 +86,7 @@ public class RingDetectorAuto extends AutoBase
             // getUpdatedRecognitions() will return null if no new information is available since
             // the last time that call was made.
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-            if (updatedRecognitions != null && doDetection)
+            if (doDetection && updatedRecognitions != null)
             {
                 telemetry.addData("# Object Detected", updatedRecognitions.size());
 
@@ -109,25 +101,14 @@ public class RingDetectorAuto extends AutoBase
                     
                     telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                             recognition.getRight(), recognition.getBottom());
-                    
-                    
-                    // decide how many rings there are based on presumed label of recognition
-                    if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT))
-                    {
-                        ringAmount = RingAmount.Quad;
-                        doDetection = false;
-                    }
-                    
-                    if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT))
-                    {
-                        ringAmount = RingAmount.Single;
-                        doDetection = false;
-                    }
                 }
                 
                 telemetry.update();
             }
+            // if no object is detected, then there is no stack and the target zone is the closest zone.
         }
+        
+        super.loop();
     }
 
     @Override
