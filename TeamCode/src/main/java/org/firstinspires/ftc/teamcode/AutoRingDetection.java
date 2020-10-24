@@ -9,15 +9,61 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
+import static org.firstinspires.ftc.teamcode.AutoRingDetection.State.*;
+
 @Autonomous(name = "Ring Detector Auto", group="Autonomous")
-public class AutoRingDetection extends AutoBaseIncremental
+public class AutoRingDetection extends AutoBase
 {
+    
+    protected enum State
+    {
+        START,
+        DETECT,
+        NO_RING_POS,
+        SINGLE_RING_POS,
+        QUAD_RING_POS,
+    }
+
     private final boolean redAlliance = true;
     private boolean doDetection = true;
+
+
+    @Override
+    protected int handleState(int currentState, int seconds)
+    {
+        State state = getCurrentState(State.values());
+        telemetry.addData("Current state", state);
+
+        switch (getCurrentState(State.values()))
+        {
+            case START:
+                return DETECT.ordinal();
+            //break;
+
+            case DETECT:
+                if (seconds > 1.5)
+                {
+                    return getDetectedRingAmountPos().ordinal();
+                }
+                break;
+                
+            case NO_RING_POS:
+                break;
+
+            case SINGLE_RING_POS:
+                break;
+                
+            case QUAD_RING_POS:
+                break;
+        }
+        return currentState;
+    }
+    
+    
     
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
-    private static final String LABEL_FIRST_ELEMENT = "Quad";
-    private static final String LABEL_SECOND_ELEMENT = "Single";
+    private static final String LABEL_SINGLE_ELEMENT = "Single";
+    private static final String LABEL_QUAD_ELEMENT = "Quad";
 
     /*
      * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
@@ -77,10 +123,11 @@ public class AutoRingDetection extends AutoBaseIncremental
         telemetry.update();
     }
     
-
-    @Override
-    public void loop()
+    
+    protected State getDetectedRingAmountPos()
     {
+        State ringAmount = NO_RING_POS; // Default to no rings if no recognitions are made.
+        
         if (tfod != null)
         {
             // getUpdatedRecognitions() will return null if no new information is available since
@@ -90,7 +137,7 @@ public class AutoRingDetection extends AutoBaseIncremental
             {
                 telemetry.addData("# Object Detected", updatedRecognitions.size());
 
-                // step through the list of recognitions and display boundary info.
+                // Step through the list of recognitions and display boundary info.
                 int i = 0;
                 for (Recognition recognition : updatedRecognitions)
                 {
@@ -101,14 +148,20 @@ public class AutoRingDetection extends AutoBaseIncremental
                     
                     telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                             recognition.getRight(), recognition.getBottom());
+                    
+                    if (recognition.getLabel().equals(LABEL_SINGLE_ELEMENT))
+                    {
+                        ringAmount = SINGLE_RING_POS;
+                    }
+                    else if (recognition.getLabel().equals(LABEL_QUAD_ELEMENT))
+                    {
+                        ringAmount = QUAD_RING_POS;
+                    }
                 }
-                
-                telemetry.update();
             }
-            // if no object is detected, then there is no stack and the target zone is the closest zone.
         }
         
-        super.loop();
+        return ringAmount;
     }
 
     @Override
@@ -149,7 +202,7 @@ public class AutoRingDetection extends AutoBaseIncremental
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfodParameters.minResultConfidence = 0.8f;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_QUAD_ELEMENT, LABEL_SINGLE_ELEMENT);
     }
 
 }

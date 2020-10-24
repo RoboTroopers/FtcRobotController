@@ -7,8 +7,8 @@ import static org.firstinspires.ftc.teamcode.AutoTest.State.*;
 @Autonomous(name = "Auto Test", group="Autonomous")
 public class AutoTest extends AutoBase
 {
-    
-    enum State
+
+    protected enum State
     {
         FORWARD,
         BACKWARD,
@@ -17,26 +17,27 @@ public class AutoTest extends AutoBase
     }
     
     @Override
-    protected int handleState(int currentState, int ms)
+    protected int handleState(int currentState, int seconds)
     {
-        telemetry.addData("State", currentState);
+        State state = getCurrentState(State.values());
+        telemetry.addData("Current state", state);
         
         switch (getCurrentState(State.values()))
         {
             case FORWARD:
-                if (ms > 2500) return BACKWARD.ordinal();
+                if (seconds > 2.5) return BACKWARD.ordinal();
                 /*glideRelative(0, 50, 0, 0.15, 0, 0.0);
                 if (atTarget()) return State.BACKWARD.ordinal();*/
                 break;
 
             case BACKWARD:
-                if (ms > 5000) return LEFT.ordinal();
+                if (seconds > 5) return LEFT.ordinal();
                 /*glideRelative(0, -50, 0, 0.5, 0, 0);
                 if (atTarget()) return State.LEFT.ordinal();*/
                 break;
 
             case LEFT:
-                if (ms > 7500) return DONE.ordinal();
+                if (seconds > 7.5) return DONE.ordinal();
                 /*glideRelative(0, 0, 0, 0, 90, 0.15);
                 if (atTarget()) return State.DONE.ordinal();*/
                 break;

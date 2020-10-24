@@ -31,20 +31,26 @@ public abstract class AutoBase extends OpmodeBase
         return null;
     }
 
-    protected abstract int handleState(int currentState, int ms);
+    protected abstract int handleState(int currentState, int seconds);
 
     @Override
     public void loop()
     {
         super.loop();
         int lastState = currentState;
-
-        currentState = handleState(currentState, (int) timer.milliseconds());
+        int seconds = (int) timer.seconds();
+        
+        currentState = handleState(currentState, seconds);
         
         if (currentState != lastState)
         {
             timer.reset();
         }
+
+        telemetry.addData("Current state num", currentState);
+        telemetry.addData("Time in state (s)", seconds);
+        telemetry.addData("Time since start (s)", time);
+        telemetry.update();
     }
     
     
