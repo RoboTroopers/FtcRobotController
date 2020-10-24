@@ -1,12 +1,12 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Bot;
+import org.firstinspires.ftc.teamcode.OpmodeBase;
 import org.firstinspires.ftc.teamcode.util.GamepadTimer;
 
 @TeleOp(name = "Ring Detector Auto", group="TeleOp")
-public class TeleOpMain extends Bot
+public class TeleOpMain extends OpmodeBase
 {
     private static final double threshold = 0.05;
     private static final double turnSpeed = 0.5;
@@ -50,6 +50,6 @@ public class TeleOpMain extends Bot
             movementTurn = -gamepad1.right_stick_x * turnSpeed;
         }
 
-        applyMovement(movementY, movementX, movementTurn);
+        applyMovement(movementX, movementY, movementTurn);
     }
 }

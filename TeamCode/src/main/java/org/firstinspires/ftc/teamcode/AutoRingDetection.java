@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -10,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import java.util.List;
 
 @Autonomous(name = "Ring Detector Auto", group="Autonomous")
-public class AutoRingDetection extends AutoBase
+public class AutoRingDetection extends AutoBaseIncremental
 {
     private final boolean redAlliance = true;
     private boolean doDetection = true;

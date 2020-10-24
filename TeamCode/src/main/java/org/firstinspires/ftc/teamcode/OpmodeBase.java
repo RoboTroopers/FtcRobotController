@@ -12,8 +12,9 @@ import org.firstinspires.ftc.teamcode.util.MathMethods;
 import org.firstinspires.ftc.teamcode.util.UtilMethods;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.min;
 
-public class Bot extends OpMode
+public class OpmodeBase extends OpMode
 {
     public DcMotor frontLeft;
     public DcMotor frontRight;
@@ -93,7 +94,7 @@ public class Bot extends OpMode
 
 
     // Set powers of motors according to direction parameters.
-    public void applyMovement(double vertical, double horizontal, double turn)
+    public void applyMovement(double horizontal, double vertical, double turn)
     {
         // Sideways multiplied by 1.5 because mechanum drive strafes sideways slower than forwards/backwards
         double frontLeftRaw =  vertical + turn - (horizontal*1.5);
@@ -123,7 +124,21 @@ public class Bot extends OpMode
         rearRight.setPower(rearRightRaw);
     }
 
-    // idk
+
+    double clampPower(double power, double minSpeed, double maxSpeed)
+    {
+        if (power > 0)
+        {
+            power = MathMethods.clamp(power, minSpeed, maxSpeed);
+        }
+        else if (power < 0)
+        {
+            power = MathMethods.clamp(power, -maxSpeed, -minSpeed);
+        }
+        return power;
+    }
+    
+    
     public void glideToPos(double xPos, double yPos, double xSpeed, double ySpeed, double preferredAngle, double turnSpeed)
     {
         double absoluteDist = Math.hypot(xPos - worldXPos, yPos - worldYPos);
@@ -146,54 +161,31 @@ public class Bot extends OpMode
         {
             turnPower *= absoluteDist / turnSlowThreshold;
         }
+        turnPower = clampPower(turnPower, 0.1, turnSpeed);
 
-        applyMovement(yPower * ySpeed, xPower * xSpeed, turnPower * turnSpeed);
+        applyMovement(xPower * xSpeed, yPower * ySpeed, turnPower * turnSpeed);
     }
-
-    // idk even more
+    
+    
     public void glideRelative(double xDist, double yDist, double xSpeed, double ySpeed, double turnAngle, double turnSpeed)
     {
-        final double minSpeed = 0.025;
-
+        final double minSpeed = 0.05;
+        final double minTurnSpeed = 0.05;
+        
         double xError = xDist - getWorldXPos();
         double yError = yDist - getWorldYPos();
         double turnError = MathMethods.angleWrap(turnAngle - getWorldAngle());
 
-        if (abs(turnError) > 180) {
+        if (abs(turnError) > 180)
+        {
             turnError = 360 - turnError;
         }
+        
+        double xPower = clampPower(xError, minSpeed, xSpeed);
+        double yPower = clampPower(yError, minSpeed, ySpeed);
+        double turnPower = clampPower(turnError, minTurnSpeed, turnSpeed);
 
-        double xPower = xError/xDist;
-        if (xPower > 0)
-        {
-            xPower = MathMethods.clamp(xPower, minSpeed, xSpeed);
-        }
-        if (xPower < 0)
-        {
-            xPower = MathMethods.clamp(xPower, -xSpeed, minSpeed);
-        }
-
-        double yPower = yError/xDist;
-        if (yPower > 0)
-        {
-            yPower = MathMethods.clamp(yPower, minSpeed, ySpeed);
-        }
-        if (yPower < 0)
-        {
-            yPower = MathMethods.clamp(yPower, -ySpeed, minSpeed);
-        }
-
-        double turnPower = turnError/turnAngle;
-        if (turnPower > 0)
-        {
-            turnPower = MathMethods.clamp(turnPower, minSpeed, turnSpeed);
-        }
-        if (turnSpeed < 0)
-        {
-            yPower = MathMethods.clamp(turnPower, -turnSpeed, minSpeed);
-        }
-
-        applyMovement(yPower * ySpeed, xPower * xSpeed, turnPower * turnSpeed);
+        applyMovement(xPower * xSpeed, yPower * ySpeed, turnPower * turnSpeed);
     }
 
     @Override

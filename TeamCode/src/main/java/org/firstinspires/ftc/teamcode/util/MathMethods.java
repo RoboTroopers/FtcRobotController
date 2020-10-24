@@ -17,8 +17,10 @@ public class MathMethods
         return angle;
     }
 
-    public static double clamp(double num, double min, double max)
+    public static double clamp(double num, double a, double b)
     {
-        return Math.max(Math.min(num, max), min);
+        if (a < b) return Math.max(Math.min(num, b), a);
+        else if (a > b) return Math.max(Math.min(num, a), b);
+        else return a;
     }
 }
